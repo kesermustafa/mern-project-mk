@@ -13,7 +13,7 @@ const { CONNECTION_STRING, PORT } = require("../config");
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(PORT );
+const port = normalizePort(PORT);
 app.set("port", port);
 
 /**
@@ -67,5 +67,5 @@ function onListening() {
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
 
-  new Database().connect(CONNECTION_STRING); // 🟢 DÜZELTİLDİ!
+  new Database().connect(CONNECTION_STRING);
 }
