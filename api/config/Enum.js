@@ -22,6 +22,7 @@ module.exports = {
 
   MESSAGE:{
     CONFLICT_CATEGORY: "There is a category registered with this name",
+    CONFLICT_ROLE: "There is a role registered with this name",
     NOT_EMPTY: "Name fields must be filled",
     ID_NOT_FOUND: "No record found for this ID",
   }

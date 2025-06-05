@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const mongoose = require("mongoose");
 const Categories = require("../db/models/Categories");
 const Response = require("../lib/Response");
 const CustomError = require("../lib/Error");
@@ -30,7 +30,7 @@ router.post("/add", async (req, res, next) => {
     let category = new Categories({
       name: body.name,
       is_active: true,
-      created_by: req.user?.id,
+      created_by: req.user?.id
     });
 
     await category.save();
@@ -63,17 +63,17 @@ router.patch("/update", async (req, res, next) => {
       throw new CustomError(
         Enum.HTTP_CODES.CONFLICT, // 409
         "ID not found",
-        `${Enum.MESSAGE.ID_NOT_FOUND} : ${body.id}`
+        `${Enum.MESSAGE.ID_NOT_FOUND} : ${body._id}`
       );
 
-    /*    const existingCategory = await Categories.findOne({ name: body.name });
-    if (existingCategory) {
+    const existingCategory = await Categories.findOne({ name: body.name });
+    if (existingCategory && existingCategory._id.toString() !== body._id) {
       throw new CustomError(
         Enum.HTTP_CODES.CONFLICT, // 409
         "Conflict Error!",
         `${Enum.MESSAGE.CONFLICT_CATEGORY} : ${body.name}`
       );
-    } */
+    }
 
     let updates = {};
 
@@ -89,8 +89,6 @@ router.patch("/update", async (req, res, next) => {
       .json(Response.errorResponse(error));
   }
 });
-
-const mongoose = require("mongoose");
 
 router.delete("/delete/:id", async (req, res, next) => {
   try {
@@ -119,7 +117,7 @@ router.delete("/delete/:id", async (req, res, next) => {
     res.status(Enum.HTTP_CODES.OK).json(
       Response.successResponse({
         message: "Category deleted successfully",
-        deletedCategory,
+        deletedCategory
       })
     );
   } catch (error) {
@@ -128,7 +126,5 @@ router.delete("/delete/:id", async (req, res, next) => {
       .json(Response.errorResponse(error));
   }
 });
-
-
 
 module.exports = router;
