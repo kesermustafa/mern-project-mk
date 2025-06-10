@@ -5,6 +5,8 @@ const Categories = require("../db/models/Categories");
 const Response = require("../lib/Response");
 const CustomError = require("../lib/Error");
 const Enum = require("../config/Enum");
+const AuditLogs = require("../lib/AuditLogs");
+const logger = require("../lib/logger/LoggerClass");
 
 router.post("/add", async (req, res, next) => {
   const body = req.body;
@@ -35,8 +37,13 @@ router.post("/add", async (req, res, next) => {
 
     await category.save();
 
+    AuditLogs.info(req.user?.email, "Categories", "add", category);
+    logger.info(req.user?.email, "Categories", "add", category);
+
+
     res.json(Response.successResponse(category));
   } catch (error) {
+    logger.error(req.user?.email, "Categories", "Add",error.toString());
     res
       .status(error.code || Enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));
@@ -82,6 +89,8 @@ router.patch("/update", async (req, res, next) => {
 
     await Categories.updateOne({ _id: body._id }, updates);
 
+    AuditLogs.info(req.user?.email, "Categories", "Update", updates);
+
     res.json(Response.successResponse(updates));
   } catch (error) {
     res
@@ -106,6 +115,8 @@ router.delete("/delete/:id", async (req, res, next) => {
 
     const deletedCategory = await Categories.findByIdAndDelete(categoryId);
 
+
+
     if (!deletedCategory) {
       throw new CustomError(
         Enum.HTTP_CODES.NOT_FOUND,
@@ -120,6 +131,9 @@ router.delete("/delete/:id", async (req, res, next) => {
         deletedCategory
       })
     );
+
+    AuditLogs.info(req.user?.email, "Categories", "Delete", deletedCategory);
+
   } catch (error) {
     res
       .status(error.code || Enum.HTTP_CODES.INT_SERVER_ERROR)

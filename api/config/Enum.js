@@ -25,5 +25,23 @@ module.exports = {
     CONFLICT_ROLE: "There is a role registered with this name",
     NOT_EMPTY: "Name fields must be filled",
     ID_NOT_FOUND: "No record found for this ID",
+  },
+
+  USER_ROLES:{
+    ADMIN:"ADMIN",
+    SUPER_ADMIN:"SUPER_ADMIN",
+    SUPER_USER:"SUPER_USER",
+    USER:"USER",
+    CUSTOMER:"CUSTOMER",
+  },
+
+  LOG_LEVELS:{
+    INFO: "INFO",
+    WARN: "WARNING",
+    ERROR: "ERROR",
+    DEBUG: "DEBUG",
+    VERBOSE: "VERBOSE",
+    HTTP: "HTTP",
+    INVALID: "INVALID",
   }
 };

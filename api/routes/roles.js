@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-
 const Roles = require("../db/models/Roles");
 const RolePrivileges = require("../db/models/RolePrivilieges");
 const Response = require("../lib/Response");
@@ -32,7 +31,7 @@ router.post("/add", async (req, res) => {
         Enum.MESSAGE.NOT_EMPTY
       );
 
-    // Enhanced check for permissions: make sure it's an array and not empty
+
     if (
       !body.permission ||
       !Array.isArray(body.permission) ||
@@ -45,7 +44,7 @@ router.post("/add", async (req, res) => {
       );
     }
 
-    // Check for an existing role with the same name
+
     const existingRole = await Roles.findOne({ role_name: body.role_name });
     if (existingRole) {
       throw new CustomError(
@@ -165,9 +164,8 @@ router.delete("/delete/:id", async (req, res) => {
         `Provided ID: ${roleId} is not a valid MongoDB ObjectId`
       );
     }
-
-    // Use the custom 'remove' method to ensure related 'RolePrivileges' are deleted
-    const deleted = await Roles.remove({ _id: roleId });
+    
+     await Roles.remove({ _id: roleId });
 
     res.json(
       Response.successResponse({

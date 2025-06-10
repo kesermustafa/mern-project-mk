@@ -6,14 +6,15 @@ const schema = mongoose.Schema(
     email: String,
     location: String,
     proc_type: String,
-    log: String,
+    log: mongoose.SchemaTypes.Mixed,
   },
   {
     versionKey: false,
-    timestamps: {
-      createAt: "create_at",
-      updateAt: "update_at",
-    },
+
+      timestamps: {
+          createdAt: "created_at",
+          updatedAt: "updated_at",
+      }
   }
 );
 
