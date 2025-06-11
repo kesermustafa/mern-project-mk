@@ -1,51 +1,43 @@
 const express = require("express");
-const Response = require("../lib/Response");
 const router = express.Router();
-const AuditLogs = require("../db/models/AuditLogs");
 const moment = require("moment");
 
+const AuditLogs = require("../db/models/AuditLogs");
+const Response = require("../lib/Response");
+const auth = require("../lib/auth")();
+
+router.use(auth.authenticate());
 
 router.post("/", async (req, res) => {
-
-  console.log(req.body);
-
   try {
+    const body = req.body || {};
 
-    let body = req.body;
+    let skip = typeof body.skip === "number" ? body.skip : 0;
+    let limit = typeof body.limit === "number" && body.limit <= 500 ? body.limit : 500;
+
     let query = {};
-    let skip = body.skip;
-    let limit = body.limit;
-
-    if (typeof body.skip !== "number") {
-      skip = 0;
-    }
-
-    if (typeof body.limit !== "number" || body.limit > 500) {
-      limit = 500;
-    }
 
     if (body.begin_date && body.end_date) {
       query.created_at = {
         $gte: moment(body.begin_date),
-        $lte: moment(body.end_date)
-      }
+        $lte: moment(body.end_date),
+      };
     } else {
       query.created_at = {
         $gte: moment().subtract(1, "day").startOf("day"),
-        $lte: moment()
-      }
+        $lte: moment(),
+      };
     }
 
-    let auditLogs = await AuditLogs.find(query)
+    const auditLogs = await AuditLogs.find(query)
         .sort({ created_at: -1 })
         .skip(skip)
         .limit(limit);
 
-   res.json(Response.successResponse(auditLogs));
-
+    res.json(Response.successResponse(auditLogs));
   } catch (err) {
-    let errorResponse = Response.errorResponse(err, req.user?.language);
-    res.status(errorResponse.code).json(errorResponse);
+    const errorResponse = Response.errorResponse(err, req.user?.language);
+    res.status(errorResponse.code || 500).json(errorResponse);
   }
 });
 

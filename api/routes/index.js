@@ -7,9 +7,18 @@ const routes = fs.readdirSync(__dirname);
 
 for (let route of routes) {
   if (route.endsWith(".js") && route !== "index.js") {
-    const routeModule = require(path.join(__dirname, route));
+    console.log("Loading route:", route);
 
-    router.use("/" + route.replace(".js", ""), routeModule);
+    try {
+      const routeModule = require(path.join(__dirname, route));
+      // Clean route name: remove .js extension only
+      const routeName = route.replace(".js", "");
+
+      router.use(`/${routeName}`, routeModule);
+
+    } catch (error) {
+      console.error(`Error loading route ${route}:`, error.message);
+    }
   }
 }
 

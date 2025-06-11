@@ -13,10 +13,13 @@ module.exports = function (){
 
         try {
 
+            console.log('Received payload:', payload);
             let user = await Users.findOne({_id: payload.id});
+            console.log('Found user:', user);
+
 
             if(user){
-                let userRoles = await UserRoles.findOne({user_id: payload.id});
+                let userRoles = await UserRoles.find({user_id: payload.id});
                 let rolePrivilieges = await RolePrivilieges.find({role_id: {$in: userRoles.map(ur=>ur.role_id)}});
 
                 done(null, {
@@ -25,11 +28,12 @@ module.exports = function (){
                     roles: rolePrivilieges,
                     first_name: user.first_name,
                     last_name: user.last_name,
-
+                    exp: Math.floor(Date.now() / 1000) + config.JWT.EXPIRE_TIME
                 });
 
             }else {
-                done(new Error('User already exists'), {})
+                done(new Error('User not found'), {})
+
             }
 
         }catch(err){

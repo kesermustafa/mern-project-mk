@@ -7,6 +7,10 @@ const CustomError = require("../lib/Error");
 const Enum = require("../config/Enum");
 const AuditLogs = require("../lib/AuditLogs");
 const logger = require("../lib/logger/LoggerClass");
+const auth = require("../lib/auth")();
+
+
+router.use(auth.authenticate());
 
 router.post("/add", async (req, res, next) => {
   const body = req.body;

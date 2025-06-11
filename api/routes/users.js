@@ -10,6 +10,97 @@ const bcrypt = require("bcrypt-nodejs")
 const is = require("is_js")
 const config = require("../config");
 const jwt = require('jsonwebtoken');
+const auth = require("../lib/auth")();
+
+
+router.post('/register', async (req, res, next) => {
+
+    let body = req.body;
+    try {
+
+        const user = await Users.findOne({ });
+
+        if (user) {
+            return res.sendStatus(Enum.HTTP_CODES.NOT_FOUND)
+        }
+
+        if (!body.email) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Please enter a valid email");
+        if (!is.email(body.email)) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "not in email format");
+        if (!body.password) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Please enter a valid password");
+
+        if(body.password.length < 8) {
+            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Password must be at least 8 characters");
+        }
+
+        let password = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8), null);
+
+        const createdUser = await Users.create({
+            email: body.email,
+            password:password,
+            first_name: body.first_name,
+            last_name: body.last_name,
+            is_active: true,
+            phone_number: body.phone_number,
+        })
+
+        let role = await Roles.create({
+            role_name: Enum.USER_ROLES.SUPER_ADMIN,
+            is_active: true,
+            created_by: createdUser._id
+        })
+
+        await UserRoles.create({
+            role_id: role._id,
+            user_id: createdUser._id
+        });
+
+        res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse(createdUser, Enum.HTTP_CODES.CREATED ));
+
+    }catch(error) {
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
+    }
+});
+
+router.post('/auth', async (req, res, next) => {
+    try {
+
+        let {email, password} = req.body;
+
+        Users.validateFieldsBeforeAuth(email, password);
+
+        let user = await Users.findOne({email: email});
+
+        if (!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "User Not Found", "No registered users found");
+
+        if(!user.validPassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or Password wrong")
+
+        let payload = {
+            id: user.id,
+            email: user.email,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + config.JWT.EXPIRE_TIME,
+        }
+
+        let token = jwt.sign(payload, config.JWT.SECRET_KEY);
+
+        let userData = {
+            _id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+        }
+
+        res.json(Response.successResponse({token, user:userData}));
+
+    }catch(error) {
+        const errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code || 500).json(errorResponse);
+    }
+})
+
+
+router.use(auth.authenticate());
 
 router.get('/', async (req, res, next) => {
     try {
@@ -339,90 +430,5 @@ router.delete("/delete/:id",async (req, res, next) => {
 
 })
 
-router.post('/register', async (req, res, next) => {
-
-    let body = req.body;
-    try {
-
-        const user = await Users.findOne({ });
-
-        if (user) {
-          return res.sendStatus(Enum.HTTP_CODES.NOT_FOUND)
-        }
-
-        if (!body.email) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Please enter a valid email");
-        if (!is.email(body.email)) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "not in email format");
-        if (!body.password) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Please enter a valid password");
-
-        if(body.password.length < 8) {
-            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Password must be at least 8 characters");
-        }
-
-        let password = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8), null);
-
-        const createdUser = await Users.create({
-            email: body.email,
-            password:password,
-            first_name: body.first_name,
-            last_name: body.last_name,
-            is_active: true,
-            phone_number: body.phone_number,
-        })
-
-        let role = await Roles.create({
-            role_name: Enum.USER_ROLES.SUPER_ADMIN,
-            is_active: true,
-            created_by: createdUser._id
-        })
-
-        await UserRoles.create({
-            role_id: role._id,
-            user_id: createdUser._id
-        });
-
-        res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse(createdUser, Enum.HTTP_CODES.CREATED ));
-
-    }catch(error) {
-        let errorResponse = Response.errorResponse(error);
-        res.status(errorResponse.code).json(errorResponse);
-    }
-});
-
-router.post('/auth', async (req, res, next) => {
-    try {
-
-        let {email, password} = req.body;
-
-        Users.validateFieldsBeforeAuth(email, password);
-
-        let user = await Users.findOne({email: email});
-
-        if (!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "User Not Found", "No registered users found");
-
-        if(!user.validPassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or Password wrong")
-
-        let payload = {
-            id: user.id,
-            email: user.email,
-            iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + config.JWT.EXPIRE_TIME,
-        }
-
-        let token = jwt.sign(payload, config.JWT.SECRET_KEY);
-
-        let userData = {
-            _id: user._id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-        }
-
-        res.json(Response.successResponse({token, user:userData}));
-
-        }catch(error) {
-        const errorResponse = Response.errorResponse(error);
-        res.status(errorResponse.code || 500).json(errorResponse);
-    }
-})
 
 module.exports = router;
