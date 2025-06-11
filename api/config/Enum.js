@@ -34,7 +34,7 @@ module.exports = {
     USER:"USER",
     CUSTOMER:"CUSTOMER",
   },
-
+  PASS_LENGTH: 8,
   LOG_LEVELS:{
     INFO: "INFO",
     WARN: "WARNING",

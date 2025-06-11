@@ -29,13 +29,12 @@ router.post("/add", async (req, res, next) => {
       );
     }
 
-    let category = new Categories({
+    const category = await Categories.create({
       name: body.name,
       is_active: true,
       created_by: req.user?.id
     });
 
-    await category.save();
 
     AuditLogs.info(req.user?.email, "Categories", "add", category);
     logger.info(req.user?.email, "Categories", "add", category);

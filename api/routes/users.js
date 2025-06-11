@@ -8,7 +8,8 @@ const CustomError = require("../lib/Error");
 const Enum = require("../config/Enum");
 const bcrypt = require("bcrypt-nodejs")
 const is = require("is_js")
-
+const config = require("../config");
+const jwt = require('jsonwebtoken');
 
 router.get('/', async (req, res, next) => {
     try {
@@ -386,5 +387,42 @@ router.post('/register', async (req, res, next) => {
         res.status(errorResponse.code).json(errorResponse);
     }
 });
+
+router.post('/auth', async (req, res, next) => {
+    try {
+
+        let {email, password} = req.body;
+
+        Users.validateFieldsBeforeAuth(email, password);
+
+        let user = await Users.findOne({email: email});
+
+        if (!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "User Not Found", "No registered users found");
+
+        if(!user.validPassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or Password wrong")
+
+        let payload = {
+            id: user.id,
+            email: user.email,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + config.JWT.EXPIRE_TIME,
+        }
+
+        let token = jwt.sign(payload, config.JWT.SECRET_KEY);
+
+        let userData = {
+            _id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+        }
+
+        res.json(Response.successResponse({token, user:userData}));
+
+        }catch(error) {
+        const errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code || 500).json(errorResponse);
+    }
+})
 
 module.exports = router;

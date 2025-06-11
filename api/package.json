@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "api": "file:",
+    "bcrypt": "^6.0.0",
     "bcrypt-nodejs": "^0.0.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -15,7 +16,11 @@
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "is_js": "^0.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-simple": "^0.5.6",
     "morgan": "~1.9.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "winston": "^3.17.0"
   }
 }
