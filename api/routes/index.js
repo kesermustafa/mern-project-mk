@@ -7,7 +7,7 @@ const routes = fs.readdirSync(__dirname);
 
 for (let route of routes) {
   if (route.endsWith(".js") && route !== "index.js") {
-    console.log("Loading route:", route);
+
 
     try {
       const routeModule = require(path.join(__dirname, route));

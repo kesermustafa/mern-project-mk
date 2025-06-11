@@ -102,7 +102,7 @@ router.post('/auth', async (req, res, next) => {
 
 router.use(auth.authenticate());
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth.checkRoles("user_view"),  async (req, res, next) => {
     try {
         const { active, first_name, last_name, email, sortBy, order } = req.query;
 
@@ -168,7 +168,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.get('/pages', async (req, res, next) => {
+router.get('/pages', auth.checkRoles("user_view"),  async (req, res, next) => {
     try {
         const {
             active,
@@ -252,7 +252,7 @@ router.get('/pages', async (req, res, next) => {
     }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', auth.checkRoles("user_view"),  async (req, res, next) => {
 
     let id = req.params.id;
 
@@ -275,7 +275,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-router.post('/add', async (req, res, next) => {
+router.post('/add', auth.checkRoles("user_add"),  async (req, res, next) => {
 
   let body = req.body;
     let password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10), null);
@@ -329,7 +329,7 @@ router.post('/add', async (req, res, next) => {
   }
 });
 
-router.put("/update/:id",async (req, res, next) => {
+router.put("/update/:id", auth.checkRoles("user_update"), async (req, res, next) => {
     let id = req.params.id;
     let body = req.body;
 
@@ -403,7 +403,7 @@ router.put("/update/:id",async (req, res, next) => {
 
 })
 
-router.delete("/delete/:id",async (req, res, next) => {
+router.delete("/delete/:id", auth.checkRoles("user_delete"), async (req, res, next) => {
     let id = req.params.id;
 
     try {

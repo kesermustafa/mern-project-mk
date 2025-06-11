@@ -8,7 +8,7 @@ const auth = require("../lib/auth")();
 
 router.use(auth.authenticate());
 
-router.post("/", async (req, res) => {
+router.post("/", auth.checkRoles("auditLogs_view"), async (req, res) => {
   try {
     const body = req.body || {};
 

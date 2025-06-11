@@ -12,7 +12,7 @@ const auth = require("../lib/auth")();
 
 router.use(auth.authenticate());
 
-router.post("/add", async (req, res, next) => {
+router.post("/add", auth.checkRoles("category_add"),async (req, res, next) => {
   const body = req.body;
 
   try {
@@ -53,7 +53,7 @@ router.post("/add", async (req, res, next) => {
   }
 });
 
-router.get("/", async (req, res, next) => {
+router.get("/", auth.checkRoles("category_view"), async (req, res, next) => {
   try {
     let categories = await Categories.find({});
 
@@ -65,7 +65,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.patch("/update", async (req, res, next) => {
+router.patch("/update",auth.checkRoles("category_update"), async (req, res, next) => {
   const body = req.body;
 
   try {
@@ -102,7 +102,7 @@ router.patch("/update", async (req, res, next) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res, next) => {
+router.delete("/delete/:id",auth.checkRoles("category_delete"), async (req, res, next) => {
   try {
     const categoryId = req.params.id;
     console.log("Gelen ID:", categoryId);

@@ -13,7 +13,7 @@ const auth = require("../lib/auth")();
 router.use(auth.authenticate());
 
 /* GET users listing. */
-router.get("/", async (req, res, next) => {
+router.get("/",auth.checkRoles("role_view"), async (req, res, next) => {
   try {
     let roles = await Roles.find({});
 
@@ -24,7 +24,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/add", async (req, res) => {
+router.post("/add", auth.checkRoles("role_add"), async (req, res) => {
   let body = req.body;
 
   try {
@@ -84,7 +84,7 @@ router.post("/add", async (req, res) => {
   }
 });
 
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id",auth.checkRoles("role_update"),async (req, res) => {
   const body = req.body;
   const roleId = req.params.id;
 
@@ -155,7 +155,7 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id",  auth.checkRoles("role_delete"),async (req, res) => {
   const roleId = req.params.id;
 
   try {
@@ -182,7 +182,7 @@ router.delete("/delete/:id", async (req, res) => {
   }
 });
 
-router.get("/role_privileges", async (req, res) => {
+router.get("/role_privileges" ,auth.checkRoles("role_view"), async (req, res) => {
   res.json(role_privileges);
 });
 
